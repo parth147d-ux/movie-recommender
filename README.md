@@ -92,16 +92,13 @@ Output:
 - Captain America: Civil War  
 - Avengers: Age of Ultron  
 
-## 📸 Demo
+## 🖥️ UI Preview
 
-Example:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/581c21f7-5adc-4ca1-ba02-b38c54e85710" width="800"/>
+</p>
 
-Input: Avengers  
 
-Output:
-- Iron Man  
-- Captain America: Civil War  
-- Avengers: Age of Ultron  
 
 ---
 
