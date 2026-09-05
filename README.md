@@ -74,6 +74,16 @@ python main.py
 - TMDB 5000 Movies Dataset (Kaggle)
 
 ---
+## 📸 Demo
+
+Example:
+
+Input: Avengers  
+
+Output:
+- Iron Man  
+- Captain America: Civil War  
+- Avengers: Age of Ultron  
 
 ## ✨ Future Improvements
 
