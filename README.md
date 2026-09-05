@@ -14,6 +14,13 @@ The system suggests movies similar to a given input by analyzing movie metadata 
 - Optional Streamlit UI for interactive usage
 
 ---
+## 💡 Key Highlights
+
+- Built end-to-end ML pipeline from scratch  
+- Implemented content-based recommendation system  
+- Used cosine similarity for accurate results  
+- Added fuzzy matching for handling user input errors  
+- Designed modular and scalable project structure  
 
 ## 🧠 How It Works
 
@@ -84,6 +91,19 @@ Output:
 - Iron Man  
 - Captain America: Civil War  
 - Avengers: Age of Ultron  
+
+## 📸 Demo
+
+Example:
+
+Input: Avengers  
+
+Output:
+- Iron Man  
+- Captain America: Civil War  
+- Avengers: Age of Ultron  
+
+---
 
 ## ✨ Future Improvements
 
