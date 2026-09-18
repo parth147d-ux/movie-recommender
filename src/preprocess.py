@@ -38,7 +38,7 @@ def fetch_director(text):
             break
     return L
 
-
+@st.cache_data
 def preprocess():
     movies = load_data()
     movies.dropna(inplace=True)
