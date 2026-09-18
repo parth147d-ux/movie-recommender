@@ -42,6 +42,7 @@ def fetch_director(text):
 def preprocess():
     movies = load_data()
     movies.dropna(inplace=True)
+    movies.reset_index(drop=True,inplace=True)
 
     movies['genres'] = movies['genres'].apply(convert)
     movies['keywords'] = movies['keywords'].apply(convert)
