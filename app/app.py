@@ -18,10 +18,6 @@ from src.recommend import recommend, suggest_titles
 
 st.set_page_config(page_title="Movie Recommender", page_icon="🎬", layout="centered")
 
-
-# Cached so the dataset isn't re-parsed and the similarity matrix isn't
-# rebuilt on every interaction. Without these, each click re-ran the whole
-# pipeline (several seconds and ~5000x5000 of wasted work per press).
 @st.cache_data(show_spinner="Loading and preparing the dataset...")
 def load_df():
     return preprocess()
