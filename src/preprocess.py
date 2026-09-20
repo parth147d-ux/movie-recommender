@@ -1,19 +1,7 @@
-"""
-Data loading and feature engineering for the movie recommender.
-
-Builds a `tags` text field per movie from overview + genres + keywords +
-cast + director, and keeps the rating columns so recommendations can be
-re-ranked by quality later (see src/model.py).
-"""
-
 import ast
 import os
 import re
-
 import pandas as pd
-
-# Try NLTK's Porter stemmer; fall back to a light built-in stemmer so the
-# project runs with zero extra downloads.
 try:
     from nltk.stem import PorterStemmer
 
@@ -35,8 +23,6 @@ except ImportError:
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
-# ---------------------------------------------------------------- loading
-
 def load_data(data_dir=DATA_DIR):
     """Load and merge the TMDB 5000 movies + credits CSVs."""
     movies_path = os.path.join(data_dir, "tmdb_5000_movies.csv")
@@ -52,9 +38,6 @@ def load_data(data_dir=DATA_DIR):
 
     movies = pd.read_csv(movies_path)
     credits = pd.read_csv(credits_path)
-
-    # movies.csv uses `id`, credits.csv uses `movie_id`. Merging on title can
-    # therefore leave either name, or suffixed duplicates - normalise to one.
     movies = movies.merge(credits, on="title", suffixes=("", "_cr"))
 
     if "movie_id" not in movies.columns:
@@ -71,9 +54,6 @@ def load_data(data_dir=DATA_DIR):
     ]
     keep = [c for c in keep if c in movies.columns]
     return movies[keep]
-
-
-# ------------------------------------------------------- JSON-ish parsing
 
 def _safe_literal_eval(text):
     """Parse a stringified list of dicts, returning [] on bad input."""
@@ -104,61 +84,37 @@ def fetch_director(text):
         if d.get("job") == "Director" and "name" in d
     ][:1]
 
-<<<<<<< HEAD
 @st.cache_data
 def preprocess():
     movies = load_data()
     movies.dropna(inplace=True)
     movies.reset_index(drop=True,inplace=True)
-=======
-
-# -------------------------------------------------------- normalisation
->>>>>>> e263770 (Updated movie recommender (new pipeline + UI + improvements))
 
 def normalize_title(title):
-    """
-    Lowercase, strip punctuation and collapse whitespace.
-
-    Used to make lookups case- and punctuation-insensitive, so
-    "Spider-Man 3", "spiderman 3" and "SPIDER MAN 3" all agree.
-    """
-    if not isinstance(title, str):
+        if not isinstance(title, str):
         return ""
     t = title.lower()
     t = t.replace("&", " and ")
-    t = re.sub(r"[^a-z0-9\s]", " ", t)      # drop punctuation
+    t = re.sub(r"[^a-z0-9\s]", " ", t)     
     return re.sub(r"\s+", " ", t).strip()
 
 
 def _clean_tokens(items):
-    """Remove internal spaces so 'Science Fiction' -> 'sciencefiction'."""
     return [str(i).replace(" ", "").lower() for i in items]
 
 
-<<<<<<< HEAD
     return new_df
-=======
+
 def _stem_text(text):
     return " ".join(_stem(w) for w in text.split())
 
 
-# ------------------------------------------------------------ pipeline
+
 
 def preprocess(data_dir=DATA_DIR):
-    """
-    Return a dataframe with one row per movie and the columns:
-      movie_id, title, title_norm, tags, vote_average, vote_count,
-      popularity, release_year
 
-    The index is guaranteed to be a clean 0..N-1 RangeIndex, which is what
-    lets us index into the similarity matrix positionally.
-    """
     movies = load_data(data_dir)
 
-    # Drop rows missing text we need, then RESET THE INDEX.
-    # Without the reset, dropna leaves gaps (0, 1, 3, 7...) and any later
-    # lookup by .index[0] would point at the wrong row of the similarity
-    # matrix, which is always positional 0..N-1.
     movies = movies.dropna(subset=["title", "overview"]).copy()
     movies = movies.drop_duplicates(subset=["title"], keep="first")
     movies = movies.reset_index(drop=True)
@@ -170,8 +126,6 @@ def preprocess(data_dir=DATA_DIR):
 
     overview_tokens = movies["overview"].astype(str).str.lower().str.split()
 
-    # Weight the structured signals by repeating them: genre/cast/director
-    # matter more for "similar movie" than any single plot word.
     movies["tags"] = (
         overview_tokens
         + movies["genres"] * 2
@@ -201,4 +155,4 @@ def preprocess(data_dir=DATA_DIR):
         "vote_average", "vote_count", "popularity", "release_year",
     ]
     return movies[cols].reset_index(drop=True)
->>>>>>> e263770 (Updated movie recommender (new pipeline + UI + improvements))
+
