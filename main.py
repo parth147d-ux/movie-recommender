@@ -1,17 +1,7 @@
-"""
-Command-line version of the recommender (handy for quick testing).
-
-    python main.py
-    python main.py "dark knigth"
-"""
-
 import sys
-
 from src.model import create_model, weighted_rating
 from src.preprocess import preprocess
 from src.recommend import recommend, suggest_titles
-
-
 def main():
     print("Loading data and building the model...")
     df = preprocess()
@@ -19,8 +9,7 @@ def main():
     quality = weighted_rating(df)
     print(f"Ready - {len(df):,} movies loaded.\n")
 
-    # A query passed as an argument runs once and exits; otherwise prompt
-    # in a loop so the model is only built a single time.
+
     one_shot = " ".join(sys.argv[1:]).strip() if len(sys.argv) > 1 else None
 
     while True:
