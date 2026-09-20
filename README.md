@@ -1,97 +1,95 @@
-# 🎬 Movie Recommendation System
+# 🎬 Movie Recommender System
 
-A content-based movie recommendation system built using Python and machine learning techniques.  
-The system suggests movies similar to a given input by analyzing movie metadata such as genres, cast, keywords, and overview.
+A content-based movie recommender built on the TMDB 5000 Movie Dataset. Each
+movie is represented as a bag of "tags" drawn from its plot overview, genres,
+keywords, top-billed cast and director; similarity between movies is measured
+by cosine similarity over TF-IDF vectors, and candidates are re-ranked using an
+IMDB-style weighted rating so that results are both relevant and worth
+watching.
 
----
+## Features
 
-## 🚀 Features
+- **Forgiving search.** Case, punctuation, extra whitespace, leading articles,
+  partial titles and spelling mistakes all still resolve. `dark knigth`,
+  `THE DARK KNIGHT`, `spiderman 3` and `godfather` all find the right film.
+  Unmatched queries return "did you mean" suggestions.
+- **TF-IDF over bag-of-words**, with a toggle to switch back to plain counts so
+  the two can be compared directly.
+- **Quality-aware re-ranking.** The top ~60 most similar films are re-scored
+  with a blend of similarity and weighted rating, so an obscure 9.4-from-11-
+  votes entry doesn't outrank a genuinely comparable film. The weight is
+  adjustable, and 0 gives pure content similarity.
+- **Weighted tag fields.** Genre, cast and director tokens are repeated so
+  structural signals count for more than a single incidental plot word.
+- **Cached pipeline.** The dataset parse and similarity matrix are computed
+  once, not on every button press.
 
-- Recommend top 5 similar movies
-- Content-based filtering using metadata
-- Handles partial inputs and typos using fuzzy matching
-- Clean modular code structure
-- Optional Streamlit UI for interactive usage
+## Setup
 
----
-## 💡 Key Highlights
-
-- Built end-to-end ML pipeline from scratch  
-- Implemented content-based recommendation system  
-- Used cosine similarity for accurate results  
-- Added fuzzy matching for handling user input errors  
-- Designed modular and scalable project structure  
-
-## 🧠 How It Works
-
-1. Movie datasets are loaded and merged  
-2. Important features (genres, keywords, cast, crew, overview) are combined into a single column  
-3. Text data is converted into numerical vectors using **CountVectorizer**  
-4. **Cosine similarity** is used to measure similarity between movies  
-5. Based on similarity scores, the top 5 closest movies are recommended  
-
----
-
-## 🛠️ Tech Stack
-
-- Python  
-- Pandas  
-- NumPy  
-- Scikit-learn  
-- Difflib (for fuzzy matching)  
-- Streamlit (for UI)  
-
----
-
-## 📂 Project Structure
-
-movie-recommender/
-│
-├── data/
-├── src/
-│ ├── preprocess.py
-│ ├── model.py
-│ └── recommend.py
-│
-├── app/
-│ └── app.py
-│
-├── main.py
-├── requirements.txt
-└── README.md
-
----
-
-## ▶️ How to Run
-
-### 1. Clone the repository
-git clone https://github.com/parth147d-ux/movie-recommender.git
+```bash
+git clone https://github.com/parth147d-ux/movie-recommender
 cd movie-recommender
-
-### 2. Install dependencies
 pip install -r requirements.txt
+```
 
-### 3. Run the project
+Download the [TMDB 5000 Movie Dataset](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata)
+and place both CSVs in `data/`:
+
+```
+data/tmdb_5000_movies.csv
+data/tmdb_5000_credits.csv
+```
+
+## Usage
+
+```bash
+# Web UI
+python -m streamlit run app/app.py
+
+# Command line
 python main.py
+python main.py "dark knigth"
 
----
+# Smoke tests (generates its own synthetic data, no dataset needed)
+python tests/test_pipeline.py
+```
 
-## 📊 Dataset
+## Project structure
 
-- TMDB 5000 Movies Dataset (Kaggle)
+```
+movie-recommender/
+├── app/app.py              Streamlit interface
+├── src/preprocess.py       Loading, parsing, feature engineering
+├── src/model.py            TF-IDF vectorizer, cosine similarity, weighted rating
+├── src/recommend.py        Title resolution + recommendation ranking
+├── main.py                 CLI entry point
+└── tests/test_pipeline.py  End-to-end smoke tests
+```
 
----
-## 📸 Demo
+## How it works
 
-Example:
+1. **Load and merge** `movies.csv` and `credits.csv` on title.
+2. **Parse** the stringified JSON columns (`genres`, `keywords`, `cast`, `crew`)
+   into token lists, taking the top 3 cast members and the director.
+3. **Normalise** tokens — lowercase, strip internal spaces so `Science Fiction`
+   becomes one token, then apply stemming so `fights`/`fighting` collapse.
+4. **Vectorise** the combined tag string with TF-IDF and compute the full
+   pairwise cosine similarity matrix.
+5. **Recommend** by resolving the query to a row, taking the most similar
+   candidates, and re-ranking by `(1-w) · similarity + w · quality`.
 
-Input: Avengers  
+### A note on indexing
 
-Output:
-- Iron Man  
-- Captain America: Civil War  
-- Avengers: Age of Ultron  
+`dropna()` removes rows but leaves the original index labels behind, so the
+index becomes gapped (`0, 1, 3, 7, ...`). The similarity matrix, being a NumPy
+array, is always indexed positionally `0..N-1`. Looking a movie up by its
+index *label* and using that number to index the matrix therefore silently
+returns another movie's similarity row. `preprocess()` calls
+`reset_index(drop=True)` after dropping so the two stay aligned — worth knowing
+if you adapt this code, because the failure mode is wrong answers rather than
+an error.
 
+<<<<<<< HEAD
 ## 🖥️ UI Preview
 
 <p align="center">
@@ -99,19 +97,29 @@ Output:
 </p>
 
 
+=======
+## Limitations
 
----
+These are inherent to the approach rather than bugs:
 
-## ✨ Future Improvements
+- **No personalisation.** This is content-based, not collaborative filtering —
+  the same input always produces the same output regardless of who is asking.
+  There is no user model and no feedback loop.
+- **Cold start.** A film with no overview, keywords or credits in the dataset
+  cannot be recommended meaningfully.
+- **Static dataset.** TMDB 5000 ends in 2017, so nothing more recent exists.
+- **Bag-of-words has no semantics.** "Space" and "cosmos" are unrelated tokens
+  under TF-IDF. Sentence embeddings over the overview text would capture this;
+  that's the natural next iteration.
+- **No formal evaluation.** Content-based recommenders are hard to score
+  without interaction data. Quality is currently assessed by inspection rather
+  than a held-out metric.
 
-- Add web UI (Streamlit)
-- Show movie posters
-- Deploy online
+## Possible next steps
+>>>>>>> e263770 (Updated movie recommender (new pipeline + UI + improvements))
 
----
-
-## 👤 Author
-
-**Parth Dwivedi**  
-📧 parth147d@gmail.com  
-🔗 GitHub: https://github.com/parth147d-ux
+- Swap TF-IDF for sentence embeddings (`sentence-transformers`) and compare.
+- Add an EDA notebook covering genre distribution, rating spread and keyword
+  frequency.
+- Add poster art via the TMDB API.
+- Deploy to Streamlit Community Cloud for a live demo link.

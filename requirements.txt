@@ -1,3 +1,6 @@
-pandas
-numpy
-scikit-learn
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3
+streamlit>=1.32
+# Optional: enables NLTK's Porter stemmer instead of the built-in fallback
+# nltk>=3.8
